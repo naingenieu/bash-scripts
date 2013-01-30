@@ -1,10 +1,12 @@
-#! /bin/sh
-# Copyright © 2013, PJSimply
+#! /bin/bash
+# Copyright © 2013, naingenieu <nain dot genieu at gmail dot com>
 # This program is free software. It comes without any warranty, to
 # the extent permitted by applicable law. You can redistribute it
 # and/or modify it under the terms of the Do What The Fuck You Want
 # To Public License, Version 2, as published by Sam Hocevar. See
 # http://www.wtfpl.net/ for more details.
+
+# This bash script take an vine.co url, download the corresponding video and turn it into a gif 
 
 while [ $# -gt 0 ]
 	do
@@ -34,7 +36,7 @@ echo "Téléchargement terminé"
 echo "Conversion en cours..."
 mplayer -vo gif89a $videoname > /dev/null 2>&1
 echo "Conversion terminé"
-echo "Script par PJSimply"
+echo "Script par naingenieu"
 
 if [ ! -z $gif ]; then
 	mv out.gif $gif

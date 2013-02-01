@@ -1,0 +1,49 @@
+#! /bin/bash
+
+cur=$(pwd)
+qflag='';
+dir='./';
+while [ $# -gt 0 ]
+	do
+   	case "$1" in
+   		-q)  qflag='-q';;
+  		-d)  dir="$2"; shift;;
+  		-u)  url="$2"; shift;;
+  		--)  shift; break;;
+  		-*)
+    		echo >&2 \
+    		"usage: $0 [-q pour ne pas afficher le téléchargement des images] [-d dir] [dossier de destination] [-u url] [thread 4chan à dl]"
+    		exit 1;;
+		  *)  break;;
+   			esac
+   		shift;
+	done;
+if [ ! -z $url ]; then
+  echo -e 'Coucou, vous pouvez laisser tourner, vous serez avertis à la fin\n';
+  if [ ! -d $dir ]; 
+  	then mkdir $dir;
+  	echo -e 'Dossier crée ...\n';
+  fi;
+  cd $dir;
+  wget -q "${url}" -O /tmp/etape1 # récupération du thread dans etape1.txt
+     sed 's/</\n/g' /tmp/etape1 | grep 'images.*fileThumb\|fileThumb.*images' | cut -d '"' -f4 > /tmp/etape2; 
+         # - on remplace une partie des balises html par des sauts de ligne pour faciliter l'utilsation des commandes cut et grep
+         # - on récupère liens de type image qui ont la classe FileThumb
+         # - on récupère les morceaux url que l'on stock dans etape2.txt
+         #
+         for line in $(cat /tmp/etape2);
+                  do line='http:'"${line}"; echo "${line}"; done > /tmp/etape3; # ajout du morceau d'url pour les rendre compréhensibles par wget
+         echo -e 'Téléchargement des images en cours ...\n';
+  wget "${qflag}" -i /tmp/etape3; # récupération des url au bon format contenues dans urls.txt
+  echo 'Suppression des fichiers inutiles';
+        rm -f /tmp/etape*
+        cd $cur;
+  if [ -d /usr/bin/notify-send ]; 
+         	then notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "Téléchargement terminé"; # si l'utilisateur a installé notify send il a un bel avertissement
+  else
+  	echo -e 'Téléchargement terminé'; # sinon simple fin de commande
+  fi;
+else
+  echo >&2 "usage: $0 [-q pour ne pas afficher le téléchargement des images] [-d dir] [dossier de destination] [-u url] [thread 4chan à dl]"
+  exit 1
+fi;
